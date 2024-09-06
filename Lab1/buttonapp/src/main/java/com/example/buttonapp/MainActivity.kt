@@ -1,4 +1,4 @@
-package com.example.lab1
+package com.example.buttonapp
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
