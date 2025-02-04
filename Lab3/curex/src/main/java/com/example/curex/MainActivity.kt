@@ -19,14 +19,15 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        val testText = findViewById<TextView>(R.id.testText)
         val url = "https://www.cbr.ru/scripts/XML_daily.asp"
+        val testText = findViewById<TextView>(R.id.testText)
+        val dateText = findViewById<TextView>(R.id.dateText)
 
         GlobalScope.launch(Dispatchers.IO) {
             val xmlFileData = downloadXmlFile(url)
 
             withContext(Dispatchers.Main) {
-                val parsedData = parseXmlData(xmlFileData.toString())
+                val parsedData = parseXmlData(xmlFileData, dateText)
                 var str = ""
                 for ((key, value) in parsedData)
                     str += "$key: $value\n"
@@ -35,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun downloadXmlFile(url: String): String? {
+    private fun downloadXmlFile(url: String): String {
         val connection = URL(url).openConnection() as HttpURLConnection
 
         val response = try {
@@ -46,7 +47,7 @@ class MainActivity : AppCompatActivity() {
                 val reader = BufferedReader(InputStreamReader(connection.inputStream))
                 reader.use { it.readText() }
             } else {
-                null
+                "null"
             }
         } finally {
             connection.disconnect()
@@ -55,12 +56,12 @@ class MainActivity : AppCompatActivity() {
         return response
     }
 
-    private fun parseXmlData(xml: String): Map<String, Double?> {
+    private fun parseXmlData(xml: String, dateText: TextView): Map<String, Double> {
         val parserFactory = XmlPullParserFactory.newInstance()
         val parser = parserFactory.newPullParser()
         parser.setInput(StringReader(xml))
 
-        val currencies = mutableMapOf<String, Double?>()
+        val currencies = mutableMapOf<String, Double>()
         var eventType = parser.eventType
         var currencyName = ""
         var currencyRate = ""
@@ -71,12 +72,17 @@ class MainActivity : AppCompatActivity() {
                     when (parser.name) {
                         "CharCode" -> currencyName = parser.nextText()
                         "Value" -> currencyRate = parser.nextText()
+                        "ValCurs" -> {
+                            val date = parser.getAttributeValue(null, "Date")
+                            dateText.text = "Дата сбора данных: $date"
+                        }
                     }
                 }
                 XmlPullParser.END_TAG -> {
-                    if (parser.name == "Valute" && !currencyName.isEmpty()
-                        && !currencyRate.isEmpty()) {
-                        currencies[currencyName] = currencyRate.toDoubleOrNull()
+                    if (parser.name == "Valute" && currencyName.isNotEmpty()
+                        && currencyRate.isNotEmpty()
+                    ) {
+                        currencies[currencyName] = getDoubleFromStr(currencyRate)
                         currencyName = ""
                         currencyRate = ""
                     }
@@ -88,5 +94,10 @@ class MainActivity : AppCompatActivity() {
 
         currencies["RUB"] = 1.0
         return currencies
+    }
+
+    private fun getDoubleFromStr(str: String): Double {
+        val newStr = str.replace(",", ".")
+        return newStr.toDouble()
     }
 }
