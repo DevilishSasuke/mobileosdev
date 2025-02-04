@@ -1,12 +1,16 @@
 package com.example.rps
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.random.Random
+
 
 class MainActivity : AppCompatActivity() {
     private var userScore = 0;
@@ -25,6 +29,9 @@ class MainActivity : AppCompatActivity() {
         val btnPaper = findViewById<Button>(R.id.btnPaper)
         val btnScissors = findViewById<Button>(R.id.btnScissors)
         val btnBackToMenu = findViewById<Button>(R.id.btnBackToMenu)
+
+        val sharedPreferences = getSharedPreferences("GameSettings", Context.MODE_PRIVATE)
+        maxScore = sharedPreferences.getInt("maxScore", 3)
 
         resetGame(gameScore, roundResult, maxScoreText)
 
@@ -50,13 +57,10 @@ class MainActivity : AppCompatActivity() {
         roundResult.text = getRoundResult(result)
         gameScore.text = getGameScoreStr(userScore, compScore)
 
-        if (userScore == maxScore) {
-            showWinnerToast("Пользователь")
-            resetGame(gameScore, roundResult)
-        }
-        if (compScore == maxScore) {
-            showWinnerToast("Приложение")
-            resetGame(gameScore, roundResult)
+        if (userScore == maxScore || compScore == maxScore) {
+            val winner = if (userScore > compScore) "Пользователь" else "Приложение"
+            showWinnerToast(winner)
+            resetGame(gameScore)
         }
     }
 
@@ -76,35 +80,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
     private fun getGameScoreStr(user: Int, comp: Int): String {
-        return "Счёт: $user - $comp"
+        return "Текущий счёт: $user - $comp"
     }
 
     private fun getRoundResult(result: Int): String {
-        return when {
-            result == 1 -> "Результат раунда: \nПользователь победил"
-            result == 0 -> "Результат раунда: \nНичья"
-            result == -1 -> "Результат раунда: \nПриложение победило"
+        return when (result) {
+            1 -> "Результат прошлого раунда: \nПользователь победил"
+            0 -> "Результат прошлого раунда: \nНичья"
+            -1 -> "Результат прошлого раунда: \nПриложение победило"
             else -> "Неверный результат раунда"
         }
     }
 
     private fun showWinnerToast(winner: String) {
-        Toast.makeText(this, "Игра окончена. \nПобедитель: $winner", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Игра окончена. " +
+                "\nПобедитель: $winner", Toast.LENGTH_LONG).show()
     }
 
     private fun getMaxScoreStr(maxScore: Int): String {
-        return "Игра идёт до: $maxScore"
+        return "Игра идёт до $maxScore очков"
     }
 
     private fun resetGame(gameScore: TextView,
-                          roundResult: TextView,
+                          roundResult: TextView? = null,
                           maxScoreText: TextView? = null) {
         userScore = 0
         compScore = 0
         gameScore.text = getGameScoreStr(userScore, compScore)
-        roundResult.text = ""
+        roundResult?.text = ""
         maxScoreText?.text = getMaxScoreStr(maxScore)
     }
 }
