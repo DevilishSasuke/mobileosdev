@@ -9,6 +9,9 @@ import java.io.InputStreamReader
 import java.net.URL
 import java.net.HttpURLConnection
 import kotlinx.coroutines.*
+import org.xmlpull.v1.XmlPullParser
+import org.xmlpull.v1.XmlPullParserFactory
+import java.io.StringReader
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,7 +26,11 @@ class MainActivity : AppCompatActivity() {
             val xmlFileData = downloadXmlFile(url)
 
             withContext(Dispatchers.Main) {
-                testText.text = xmlFileData
+                val parsedData = parseXmlData(xmlFileData.toString())
+                var str = ""
+                for ((key, value) in parsedData)
+                    str += "$key: $value\n"
+                testText.text = str
             }
         }
     }
@@ -48,5 +55,38 @@ class MainActivity : AppCompatActivity() {
         return response
     }
 
+    private fun parseXmlData(xml: String): Map<String, Double?> {
+        val parserFactory = XmlPullParserFactory.newInstance()
+        val parser = parserFactory.newPullParser()
+        parser.setInput(StringReader(xml))
 
+        val currencies = mutableMapOf<String, Double?>()
+        var eventType = parser.eventType
+        var currencyName = ""
+        var currencyRate = ""
+
+        while (eventType != XmlPullParser.END_DOCUMENT) {
+            when (eventType) {
+                XmlPullParser.START_TAG -> {
+                    when (parser.name) {
+                        "CharCode" -> currencyName = parser.nextText()
+                        "Value" -> currencyRate = parser.nextText()
+                    }
+                }
+                XmlPullParser.END_TAG -> {
+                    if (parser.name == "Valute" && !currencyName.isEmpty()
+                        && !currencyRate.isEmpty()) {
+                        currencies[currencyName] = currencyRate.toDoubleOrNull()
+                        currencyName = ""
+                        currencyRate = ""
+                    }
+                }
+            }
+
+            eventType = parser.next()
+        }
+
+        currencies["RUB"] = 1.0
+        return currencies
+    }
 }
