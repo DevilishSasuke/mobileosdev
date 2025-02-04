@@ -10,9 +10,12 @@ class MenuActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_menu)
 
+        // get buttons from the screen
         val btnPlay = findViewById<Button>(R.id.btnPlay)
         val btnSettings = findViewById<Button>(R.id.btnSettings)
 
+        // on click of any button
+        // starting a new activity accordingly
         btnPlay.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
         }
