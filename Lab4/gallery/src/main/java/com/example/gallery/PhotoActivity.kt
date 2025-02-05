@@ -6,16 +6,11 @@ import android.widget.Button
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 
-class MainActivity : AppCompatActivity() {
+class PhotoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_photo)
 
-        val btnPhoto = findViewById<Button>(R.id.btnNewPhoto)
-
-        btnPhoto.setOnClickListener {
-            startActivity(Intent(this, PhotoActivity::class.java))
-        }
     }
 }
