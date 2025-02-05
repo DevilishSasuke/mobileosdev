@@ -1,6 +1,7 @@
 package com.example.curex
 
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.Button
 import android.widget.EditText
@@ -34,7 +35,20 @@ class MainActivity : AppCompatActivity() {
 
         btnExc.setOnClickListener {
             if (currencies.isNotEmpty()) {
-                1 + 1
+                val firstCur = currOne.selectedItem.toString()
+                val secondCur = currTwo.selectedItem.toString()
+                val userValue = userInputValue.text.toString().toDouble()
+
+                if (firstCur == secondCur) {
+                    exchangedValue.setText(String.format("%.2f", userValue))
+                }
+                else {
+                    val value = exchangeCurrencies(userValue,
+                        currencies[firstCur]!!.toDouble(),
+                        currencies[secondCur]!!.toDouble())
+                    exchangedValue.setText(String.format("%.2f", value))
+                }
+
             }
         }
 
@@ -44,7 +58,15 @@ class MainActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 val parsedData = parseXmlData(xmlFileData, dateText)
                 currencies = parsedData
-                var currenciesCodes = currencies.keys.toString()
+                var currenciesCodes = currencies.keys.sorted()
+
+                if (currenciesCodes.isNotEmpty()) {
+                    val adapter = getSpinnerAdapter(currOne, currenciesCodes.toList())
+                    currOne.adapter = adapter
+                    currOne.setSelection(0)
+                    currTwo.adapter = adapter
+                    currTwo.setSelection(0)
+                }
 
                 btnExc.isFocusable = true
             }
@@ -110,8 +132,21 @@ class MainActivity : AppCompatActivity() {
         return currencies
     }
 
+    private fun exchangeCurrencies(value: Double, course1: Double, course2: Double): Double {
+        val rel: Double = course1 / course2
+
+        return rel * value
+    }
+
     private fun getDoubleFromStr(str: String): Double {
         val newStr = str.replace(",", ".")
         return newStr.toDouble()
+    }
+
+    private fun getSpinnerAdapter(spinner: Spinner, items: List<String>): ArrayAdapter<String> {
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, items)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        return adapter
     }
 }
