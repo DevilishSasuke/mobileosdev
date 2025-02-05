@@ -1,37 +1,52 @@
 package com.example.curex
 
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Spinner
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.io.StringReader
 import java.net.URL
 import java.net.HttpURLConnection
 import kotlinx.coroutines.*
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
-import java.io.StringReader
 
 class MainActivity : AppCompatActivity() {
+    private val url = "https://www.cbr.ru/scripts/XML_daily.asp"
+    private var currencies: Map<String, Double> = emptyMap()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        val url = "https://www.cbr.ru/scripts/XML_daily.asp"
-        val testText = findViewById<TextView>(R.id.testText)
         val dateText = findViewById<TextView>(R.id.dateText)
+        val userInputValue = findViewById<EditText>(R.id.userInputValue)
+        val exchangedValue = findViewById<EditText>(R.id.exchangedValue)
+        val currOne = findViewById<Spinner>(R.id.currOne)
+        val currTwo = findViewById<Spinner>(R.id.currTwo)
+        val btnExc = findViewById<Button>(R.id.btnExc)
+
+        btnExc.setOnClickListener {
+            if (currencies.isNotEmpty()) {
+                1 + 1
+            }
+        }
 
         GlobalScope.launch(Dispatchers.IO) {
             val xmlFileData = downloadXmlFile(url)
 
             withContext(Dispatchers.Main) {
                 val parsedData = parseXmlData(xmlFileData, dateText)
-                var str = ""
-                for ((key, value) in parsedData)
-                    str += "$key: $value\n"
-                testText.text = str
+                currencies = parsedData
+                var currenciesCodes = currencies.keys.toString()
+
+                btnExc.isFocusable = true
             }
         }
     }
@@ -49,9 +64,8 @@ class MainActivity : AppCompatActivity() {
             } else {
                 "null"
             }
-        } finally {
-            connection.disconnect()
         }
+        finally { connection.disconnect() }
 
         return response
     }

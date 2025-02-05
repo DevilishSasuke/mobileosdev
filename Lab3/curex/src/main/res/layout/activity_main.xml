@@ -7,26 +7,75 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/testText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/dateText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Дата сбора данных: {date}"
-        android:layout_marginBottom="100sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/cbLogo"
+            android:layout_width="200sp"
+            android:layout_height="200sp"
+            android:src="@drawable/cb_rf" />
+
+        <TextView
+            android:id="@+id/dateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="По курсу валют от \n{date}"
+            android:textSize="25sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="20sp"/>
+
+        <EditText
+            android:id="@+id/userInputValue"
+            android:layout_width="200sp"
+            android:layout_height="70sp"
+            android:text="1.0"
+            android:textSize="30sp"
+            android:textAlignment="center"
+            android:inputType="numberDecimal"
+            android:digits="0123456789."
+            android:layout_marginBottom="10sp" />
+
+        <Spinner
+            android:id="@+id/currOne"
+            android:layout_width="200sp"
+            android:layout_height="70sp"
+            android:textAlignment="center"
+            android:background="#CCC"
+            android:layout_marginBottom="15sp"/>
+
+        <Button
+            android:id="@+id/btnExc"
+            android:layout_width="200sp"
+            android:layout_height="70sp"
+            android:text="Calculate"
+            android:clickable="false"
+            android:layout_marginBottom="15sp"/>
+
+        <EditText
+            android:id="@+id/exchangedValue"
+            android:layout_width="200sp"
+            android:layout_height="70sp"
+            android:text="1.0"
+            android:textSize="30sp"
+            android:textAlignment="center"
+            android:focusable="false"
+            android:clickable="false"
+            android:layout_marginBottom="10sp"/>
+
+        <Spinner
+            android:id="@+id/currTwo"
+            android:layout_width="200sp"
+            android:layout_height="70sp"
+            android:textAlignment="center"
+            android:background="#CCC"/>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
