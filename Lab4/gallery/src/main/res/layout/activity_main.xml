@@ -41,6 +41,12 @@
 
         </LinearLayout>
 
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="359dp"
+            android:scaleType="centerCrop" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
