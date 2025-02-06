@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gallery xmlns:android="http://schemas.android.com/apk/res/android">
+    <photo id="0">
+        <filepath>IMG_06_02_2025_20_42_14.jpg</filepath>
+        <title>Кошка</title>
+        <description>Здесь сидит кошка</description>
+        <tags>
+            <tag>cat</tag>
+            <tag>floor</tag>
+        </tags>
+    </photo>
+    <photo id="1">
+        <filepath>IMG_06_02_2025_20_39_48.jpg</filepath>
+        <title>Что-то</title>
+        <description>без идей</description>
+        <tags></tags>
+    </photo>
+</gallery>

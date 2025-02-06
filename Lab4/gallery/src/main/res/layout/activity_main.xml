@@ -47,6 +47,48 @@
             android:layout_height="359dp"
             android:scaleType="centerCrop" />
 
+        <TextView
+            android:id="@+id/idText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="id"
+            android:textSize="40sp"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:id="@+id/filepathText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="filepath"
+            android:textSize="40sp"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:id="@+id/titleText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="title"
+            android:textSize="40sp"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:id="@+id/descriptionText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="description"
+            android:textSize="40sp"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:id="@+id/tagsText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="tags"
+            android:textSize="40sp"
+            android:textAlignment="center"/>
+
+
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
