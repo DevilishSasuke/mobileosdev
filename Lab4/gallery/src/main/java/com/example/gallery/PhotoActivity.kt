@@ -1,5 +1,6 @@
 package com.example.gallery
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -24,8 +25,9 @@ class PhotoActivity : AppCompatActivity() {
             Log.d("CameraDebug", "Written file name: ${imageUri.lastPathSegment!!}")
         }
         else {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            val intent = Intent()
+            setResult(Activity.RESULT_CANCELED, intent)
+            finish()
         }
     }
 
@@ -46,14 +48,18 @@ class PhotoActivity : AppCompatActivity() {
             val desc = descriptionText.text.toString()
             val tags = tagsText.text.toString()
 
-            val imageObj = photoDb.addPhotoData(imageUri.lastPathSegment!!, title, desc, tags)
+            val takenPhoto = photoDb.addPhotoData(imageUri.lastPathSegment!!, title, desc, tags)
 
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            val intent = Intent()
+            intent.putExtra("takenPhoto", takenPhoto)
+            setResult(Activity.RESULT_OK, intent)
+            finish()
         }
 
         btnBackToGallery.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
+            val intent = Intent()
+            setResult(Activity.RESULT_CANCELED, intent)
+            finish()
         }
 
         val filename = MainActivity.getImageFilename()

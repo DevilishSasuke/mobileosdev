@@ -24,7 +24,7 @@ class PhotoDb(context: Context) {
         return PhotoData(photoId.toInt(), filepath, title, description, tags)
     }
 
-    fun getAllPhotoData(): List<PhotoData> {
+    fun getAllPhotoData(): MutableList<PhotoData> {
         val db = dbHelper.readableDatabase
         val allPhotoData = mutableListOf<PhotoData>()
         val cursor = db.query(PhotoDbHelper.table_name,

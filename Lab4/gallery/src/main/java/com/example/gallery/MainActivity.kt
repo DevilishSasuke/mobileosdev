@@ -1,5 +1,6 @@
 package com.example.gallery
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -7,11 +8,7 @@ import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.provider.MediaStore
-import android.util.Log
 import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -27,10 +24,20 @@ import com.example.gallery.models.PhotoData
 class MainActivity : AppCompatActivity() {
 
     private val photoDb by lazy { PhotoDb(this) }
-    private var photosData:List<PhotoData> = listOf<PhotoData>()
+    private var photosData:MutableList<PhotoData> = mutableListOf()
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: PhotoAdapter
+
+    private val photoActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val takenPhoto = result.data?.getSerializableExtra("takenPhoto")
+                takenPhoto?.let { photosData.add(0, takenPhoto as PhotoData) }
+                adapter.notifyItemInserted(0)
+                recyclerView.scrollToPosition(0)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,7 +45,8 @@ class MainActivity : AppCompatActivity() {
 
         val buttonCapture = findViewById<Button>(R.id.btnNewPhoto)
         requestCameraPermission()
-        photosData = photoDb.getAllPhotoData().reversed()
+        photosData = photoDb.getAllPhotoData()
+        photosData.reverse()
 
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = GridLayoutManager(this, 2)
@@ -46,62 +54,9 @@ class MainActivity : AppCompatActivity() {
         adapter = PhotoAdapter(this, photosData)
         recyclerView.adapter = adapter
 
-
-
-        /*
-        imageView = findViewById(R.id.imageView)
-        val idText = findViewById<TextView>(R.id.idText)
-        val filepathText = findViewById<TextView>(R.id.filepathText)
-        val titleText = findViewById<TextView>(R.id.titleText)
-        val descriptionText = findViewById<TextView>(R.id.descriptionText)
-        val tagsText = findViewById<TextView>(R.id.tagsText)
-
-
-        if (photosData.isNotEmpty()) {
-            val photoData = photosData.last()
-
-            titleText.text = photoData.title
-            descriptionText.text = photoData.description
-            tagsText.text = addHashes(photoData.tags)
-
-            imageUri = createImageUri(photoData.filename)
-            imageView.setImageURI(imageUri)
-        }
-         */
-
         buttonCapture.setOnClickListener {
-            startActivity(Intent(this, PhotoActivity::class.java))
-
-            /*
-            val photoData = photosData.last()
-
-            idText.text = photoData.id.toString()
-            filepathText.text = "abbababa"
-            titleText.text = photoData.title
-            descriptionText.text = photoData.description
-            tagsText.text = addHashes(photoData.tags)
-
-            imageUri = createImageUri(photoData.filename)
-            imageView.setImageURI(imageUri)
-
-             */
-
-            /*
-
-            val filename = getImageFilename()
-            imageUri = createImageUri(filename)
-
-            cameraActivity.launch(imageUri)
-             */
-
-
-            /*
-            val imgName = "IMG_06_02_2025_20_42_14.jpg"
-            // IMG_06_02_2025_20_39_48.jpg
-            imageUri = createImageUri(imgName)
-            imageView.setImageURI(imageUri)
-
-             */
+            val intent = Intent(this, PhotoActivity::class.java)
+            photoActivity.launch(intent)
         }
 
     }
@@ -160,5 +115,4 @@ class MainActivity : AppCompatActivity() {
             )
         }
     }
-
 }
