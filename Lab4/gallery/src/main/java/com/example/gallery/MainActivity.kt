@@ -4,14 +4,11 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.icu.text.SimpleDateFormat
-import android.media.Image
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.provider.ContactsContract.Contacts.Photo
 import android.provider.MediaStore
 import android.util.Log
-import android.util.Xml
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
@@ -29,8 +26,8 @@ import org.xmlpull.v1.XmlPullParser
 
 class MainActivity : AppCompatActivity() {
 
-    private val photoXmlPath = "photo_data.xml"
     private var photosData: MutableList<PhotoData> = mutableListOf<PhotoData>()
+    private val photoDb by lazy { PhotoDb(this) }
 
     private lateinit var imageView: ImageView
     private lateinit var imageUri: Uri
@@ -39,8 +36,8 @@ class MainActivity : AppCompatActivity() {
         success ->
             if (success) {
                 imageView.setImageURI(imageUri)
-                Log.d("CameraDebug", imageUri.path!!)
-                //saveImageToFile()
+                Log.d("CameraDebug", "Written file name: $imageUri.lastPathSegment!!")
+                photoDb.addPhotoData(imageUri.lastPathSegment!!, "tv", "broken tv", "notextures")
             }
     }
 
@@ -51,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         imageView = findViewById(R.id.imageView)
         val buttonCapture = findViewById<Button>(R.id.btnNewPhoto)
         requestCameraPermission()
-        photosData = getCurrentPhotoData()
+        photosData = photoDb.getAllPhotoData()
 
         val idText = findViewById<TextView>(R.id.idText)
         val filepathText = findViewById<TextView>(R.id.filepathText)
@@ -60,27 +57,25 @@ class MainActivity : AppCompatActivity() {
         val tagsText = findViewById<TextView>(R.id.tagsText)
 
         buttonCapture.setOnClickListener {
-            val photoData = photosData.first()
+            val photoData = photosData.last()
 
-            filepathText.text = photoData.filename
+            idText.text = photoData.id.toString()
+            filepathText.text = "abbababa"
             titleText.text = photoData.title
             descriptionText.text = photoData.description
-
-            var str = ""
-            for (tag in photoData.tags)
-                str += "#$tag "
-            tagsText.text = str
+            tagsText.text = addHashes(photoData.tags)
 
             imageUri = createImageUri(photoData.filename)
             imageView.setImageURI(imageUri)
 
             /*
+
             val filename = getImageFilename()
             imageUri = createImageUri(filename)
 
             cameraActivity.launch(imageUri)
-
              */
+
 
             /*
             val imgName = "IMG_06_02_2025_20_42_14.jpg"
@@ -102,7 +97,7 @@ class MainActivity : AppCompatActivity() {
         var filepath = ""
         var title = ""
         var description = ""
-        var tags: MutableList<String> = mutableListOf<String>()
+        var tags = ""
 
         while (eventType != XmlPullParser.END_DOCUMENT) {
             when (eventType){
@@ -112,7 +107,7 @@ class MainActivity : AppCompatActivity() {
                         "filepath" -> filepath = parser.nextText()
                         "title" -> title = parser.nextText()
                         "description" -> description = parser.nextText()
-                        "tag" -> tags.add(parser.nextText())
+                        "tag" -> tags += parser.nextText()
                     }
                 }
                 XmlPullParser.END_TAG -> {
@@ -123,7 +118,7 @@ class MainActivity : AppCompatActivity() {
                         filepath = ""
                         title = ""
                         description = ""
-                        tags = mutableListOf<String>()
+                        tags = ""
                     }
                 }
             }
@@ -167,6 +162,10 @@ class MainActivity : AppCompatActivity() {
         val file = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), filename)
 
         return FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+    }
+
+    private fun addHashes(tags: String): String {
+        return "#$tags"
     }
 
     private fun requestCameraPermission() {

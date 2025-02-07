@@ -5,5 +5,5 @@ data class PhotoData (
     val filename: String,
     val title: String = "",
     val description: String = "",
-    val tags: MutableList<String> = mutableListOf<String>()
+    val tags: String = ""
 )
