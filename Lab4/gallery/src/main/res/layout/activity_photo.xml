@@ -11,15 +11,84 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:gravity="center"
-        android:padding="10dp">
+        android:gravity="top">
 
-
-        <TextView
-            android:id="@+id/textView"
+        <Button
+            android:id="@+id/btnBackToGallery"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Test photo activity" />
+            android:text="Назад в меню"
+            android:background="@color/black" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/takenPhoto"
+                android:layout_width="320sp"
+                android:layout_height="320sp"
+                android:scaleType="centerCrop"
+                android:gravity="center"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Название"
+                android:textSize="25sp"
+                android:textAlignment="center"/>
+
+            <EditText
+                android:id="@+id/titleEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Введите название"
+                android:text=""
+                android:textSize="20sp"
+                android:textAlignment="center"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Описание"
+                android:textSize="25sp"
+                android:textAlignment="center"/>
+
+            <EditText
+                android:id="@+id/descEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Введите описание"
+                android:text=""
+                android:textSize="20sp"
+                android:textAlignment="center"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Теги изображения"
+                android:textSize="25sp"
+                android:textAlignment="center"/>
+
+            <EditText
+                android:id="@+id/tagsEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Введите теги (через пробел)"
+                android:text=""
+                android:textSize="20sp"
+                android:textAlignment="center"/>
+
+            <Button
+                android:id="@+id/btnSavePhoto"
+                android:layout_width="350sp"
+                android:layout_height="wrap_content"
+                android:text="Сохранить изображение" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

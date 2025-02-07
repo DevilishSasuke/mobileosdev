@@ -1,6 +1,7 @@
 package com.example.gallery
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.icu.text.SimpleDateFormat
@@ -56,7 +57,19 @@ class MainActivity : AppCompatActivity() {
         val descriptionText = findViewById<TextView>(R.id.descriptionText)
         val tagsText = findViewById<TextView>(R.id.tagsText)
 
+        val photoData = photosData.last()
+
+        titleText.text = photoData.title
+        descriptionText.text = photoData.description
+        tagsText.text = addHashes(photoData.tags)
+
+        imageUri = createImageUri(photoData.filename)
+        imageView.setImageURI(imageUri)
+
         buttonCapture.setOnClickListener {
+            startActivity(Intent(this, PhotoActivity::class.java))
+
+            /*
             val photoData = photosData.last()
 
             idText.text = photoData.id.toString()
@@ -67,6 +80,8 @@ class MainActivity : AppCompatActivity() {
 
             imageUri = createImageUri(photoData.filename)
             imageView.setImageURI(imageUri)
+
+             */
 
             /*
 
@@ -88,6 +103,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    /*
     private fun getCurrentPhotoData(): MutableList<PhotoData> {
         val parser = resources.getXml(R.xml.photo_data)
 
@@ -128,6 +144,8 @@ class MainActivity : AppCompatActivity() {
 
         return resultData
     }
+
+     */
 
     private fun saveImageToFile() {
         val outputFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
