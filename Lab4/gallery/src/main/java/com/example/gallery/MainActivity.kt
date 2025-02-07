@@ -3,7 +3,6 @@ package com.example.gallery
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.os.Bundle
@@ -18,53 +17,57 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import java.io.File
-import java.io.FileOutputStream
 import java.util.Date
 import java.util.Locale
 import com.example.gallery.models.PhotoData
-import org.xmlpull.v1.XmlPullParser
 
 class MainActivity : AppCompatActivity() {
 
-    private var photosData: MutableList<PhotoData> = mutableListOf<PhotoData>()
     private val photoDb by lazy { PhotoDb(this) }
+    private var photosData:List<PhotoData> = listOf<PhotoData>()
 
-    private lateinit var imageView: ImageView
-    private lateinit var imageUri: Uri
-    // creating camera activity to run camera from app
-    private val cameraActivity = registerForActivityResult(ActivityResultContracts.TakePicture()) {
-        success ->
-            if (success) {
-                imageView.setImageURI(imageUri)
-                Log.d("CameraDebug", "Written file name: $imageUri.lastPathSegment!!")
-                photoDb.addPhotoData(imageUri.lastPathSegment!!, "tv", "broken tv", "notextures")
-            }
-    }
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var adapter: PhotoAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        imageView = findViewById(R.id.imageView)
         val buttonCapture = findViewById<Button>(R.id.btnNewPhoto)
         requestCameraPermission()
-        photosData = photoDb.getAllPhotoData()
+        photosData = photoDb.getAllPhotoData().reversed()
 
+        recyclerView = findViewById(R.id.recyclerView)
+        recyclerView.layoutManager = GridLayoutManager(this, 2)
+
+        adapter = PhotoAdapter(this, photosData)
+        recyclerView.adapter = adapter
+
+
+
+        /*
+        imageView = findViewById(R.id.imageView)
         val idText = findViewById<TextView>(R.id.idText)
         val filepathText = findViewById<TextView>(R.id.filepathText)
         val titleText = findViewById<TextView>(R.id.titleText)
         val descriptionText = findViewById<TextView>(R.id.descriptionText)
         val tagsText = findViewById<TextView>(R.id.tagsText)
 
-        val photoData = photosData.last()
 
-        titleText.text = photoData.title
-        descriptionText.text = photoData.description
-        tagsText.text = addHashes(photoData.tags)
+        if (photosData.isNotEmpty()) {
+            val photoData = photosData.last()
 
-        imageUri = createImageUri(photoData.filename)
-        imageView.setImageURI(imageUri)
+            titleText.text = photoData.title
+            descriptionText.text = photoData.description
+            tagsText.text = addHashes(photoData.tags)
+
+            imageUri = createImageUri(photoData.filename)
+            imageView.setImageURI(imageUri)
+        }
+         */
 
         buttonCapture.setOnClickListener {
             startActivity(Intent(this, PhotoActivity::class.java))
@@ -103,94 +106,45 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    /*
-    private fun getCurrentPhotoData(): MutableList<PhotoData> {
-        val parser = resources.getXml(R.xml.photo_data)
+    companion object {
+        public fun getImageFilename(): String {
+            /*
+                getting unique filename by using timestamp to avoid
+                file collision and overwrite
+             */
+            val sdf = SimpleDateFormat("dd_MM_yyyy_HH_mm_ss", Locale.getDefault())
+            val curDate = sdf.format(Date())
 
-        val resultData = mutableListOf<PhotoData>()
-        var eventType = parser.eventType // event type of current string in xml
-        var id = 0
-        var filepath = ""
-        var title = ""
-        var description = ""
-        var tags = ""
-
-        while (eventType != XmlPullParser.END_DOCUMENT) {
-            when (eventType){
-                XmlPullParser.START_TAG -> {
-                    when (parser.name) {
-                        "photo" -> id = parser.getAttributeValue(null, "id").toInt()
-                        "filepath" -> filepath = parser.nextText()
-                        "title" -> title = parser.nextText()
-                        "description" -> description = parser.nextText()
-                        "tag" -> tags += parser.nextText()
-                    }
-                }
-                XmlPullParser.END_TAG -> {
-                    if (parser.name == "photo") {
-                        val photoData = PhotoData(id, filepath, title, description, tags)
-                        resultData.add(photoData)
-                        id = 0
-                        filepath = ""
-                        title = ""
-                        description = ""
-                        tags = ""
-                    }
-                }
-            }
-
-            eventType = parser.next()
+            return "IMG_$curDate.jpg"
         }
 
-        return resultData
-    }
+        public fun createImageUri(context: Context, filename: String): Uri {
+            /*
+                return new created identifier of unique named file
 
-     */
+                creating it in default picture folder of app
+             */
+            val file = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), filename)
 
-    private fun saveImageToFile() {
-        val outputFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-            imageUri.lastPathSegment!!)
-
-        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
-        val fos = FileOutputStream(outputFile.path)
-
-        fos.use {
-            bitmap?.compress(Bitmap.CompressFormat.JPEG, 90, fos)
+            return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         }
 
-    }
+        public fun addHashes(tags: String): String {
+            val splited_tags = tags.split(" ")
+            var result = ""
 
-    private fun getImageFilename(): String {
-        /*
-            getting unique filename by using timestamp to avoid
-            file collision and overwrite
-         */
-        val sdf = SimpleDateFormat("dd_MM_yyyy_HH_mm_ss", Locale.getDefault())
-        val curDate = sdf.format(Date())
+            for (tag in splited_tags)
+                if (tag.isNotBlank() and tag.isNotEmpty())
+                    result += "#$tag "
 
-        return "IMG_$curDate.jpg"
-    }
-
-    private fun createImageUri(filename: String): Uri {
-        /*
-            return new created identifier of unique named file
-
-            creating it in default picture folder of app
-         */
-        val file = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), filename)
-
-        return FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
-    }
-
-    private fun addHashes(tags: String): String {
-        return "#$tags"
+            return result.trim()
+        }
     }
 
     private fun requestCameraPermission() {
         /*
             getting camera permission every time app starts
-         */
-
+        */
         // if permission is not granted
         if (ContextCompat.checkSelfPermission(
                 this,

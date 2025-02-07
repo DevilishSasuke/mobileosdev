@@ -41,10 +41,16 @@
 
         </LinearLayout>
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <!--
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="match_parent"
-            android:layout_height="359dp"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
             android:scaleType="centerCrop" />
 
         <TextView
@@ -87,7 +93,7 @@
             android:textSize="40sp"
             android:textAlignment="center"/>
 
-
+        -->
 
     </LinearLayout>
 

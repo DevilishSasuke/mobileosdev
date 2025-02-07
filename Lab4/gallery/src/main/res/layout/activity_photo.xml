@@ -28,8 +28,8 @@
 
             <ImageView
                 android:id="@+id/takenPhoto"
-                android:layout_width="320sp"
-                android:layout_height="320sp"
+                android:layout_width="160sp"
+                android:layout_height="160sp"
                 android:scaleType="centerCrop"
                 android:gravity="center"/>
 

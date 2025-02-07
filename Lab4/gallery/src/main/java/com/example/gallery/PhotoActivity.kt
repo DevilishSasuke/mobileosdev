@@ -1,10 +1,8 @@
 package com.example.gallery
 
 import android.content.Intent
-import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.widget.Button
 import android.widget.EditText
@@ -12,10 +10,6 @@ import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.FileProvider
-import java.io.File
-import java.util.Date
-import java.util.Locale
 
 class PhotoActivity : AppCompatActivity() {
 
@@ -27,7 +21,11 @@ class PhotoActivity : AppCompatActivity() {
             success ->
         if (success) {
             takenImage.setImageURI(imageUri)
-            Log.d("CameraDebug", "Written file name: $imageUri.lastPathSegment!!")
+            Log.d("CameraDebug", "Written file name: ${imageUri.lastPathSegment!!}")
+        }
+        else {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
         }
     }
 
@@ -58,32 +56,10 @@ class PhotoActivity : AppCompatActivity() {
             startActivity(Intent(this, MainActivity::class.java))
         }
 
-        val filename = getImageFilename()
-        imageUri = createImageUri(filename)
+        val filename = MainActivity.getImageFilename()
+        imageUri = MainActivity.createImageUri(this, filename)
 
         cameraActivity.launch(imageUri)
-    }
-
-    private fun getImageFilename(): String {
-        /*
-            getting unique filename by using timestamp to avoid
-            file collision and overwrite
-         */
-        val sdf = SimpleDateFormat("dd_MM_yyyy_HH_mm_ss", Locale.getDefault())
-        val curDate = sdf.format(Date())
-
-        return "IMG_$curDate.jpg"
-    }
-
-    private fun createImageUri(filename: String): Uri {
-        /*
-            return new created identifier of unique named file
-
-            creating it in default picture folder of app
-         */
-        val file = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), filename)
-
-        return FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
     }
 }
 
