@@ -48,10 +48,9 @@ class PhotoActivity : AppCompatActivity() {
             val desc = descriptionText.text.toString()
             val tags = tagsText.text.toString()
 
-            photoDb.addPhotoData(imageUri.lastPathSegment!!, title, desc, tags)
+            val imageObj = photoDb.addPhotoData(imageUri.lastPathSegment!!, title, desc, tags)
 
             val intent = Intent(this, MainActivity::class.java)
-            //intent.putExtra("takenImageUri", imageUri)
             startActivity(intent)
         }
 

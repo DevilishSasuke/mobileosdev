@@ -8,7 +8,8 @@ import com.example.gallery.models.PhotoData
 class PhotoDb(context: Context) {
     private val dbHelper = PhotoDbHelper(context)
 
-    fun addPhotoData(filepath: String, title: String = "", description: String = "", tags: String = ""): Long {
+    fun addPhotoData(filepath: String, title: String = "",
+                     description: String = "", tags: String = ""): PhotoData {
         val db = dbHelper.writableDatabase
 
         val toInsert = ContentValues().apply() {
@@ -18,7 +19,9 @@ class PhotoDb(context: Context) {
             put(PhotoDbHelper.tags, tags)
         }
 
-        return db.insert(PhotoDbHelper.table_name, null, toInsert)
+        val photoId = db.insert(PhotoDbHelper.table_name, null, toInsert)
+
+        return PhotoData(photoId.toInt(), filepath, title, description, tags)
     }
 
     fun getAllPhotoData(): MutableList<PhotoData> {
