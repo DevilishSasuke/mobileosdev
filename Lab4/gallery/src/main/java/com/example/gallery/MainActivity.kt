@@ -8,7 +8,9 @@ import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.util.Log
 import android.widget.Button
+import android.widget.EditText
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -24,7 +26,8 @@ import com.example.gallery.models.PhotoData
 class MainActivity : AppCompatActivity() {
 
     private val photoDb by lazy { PhotoDb(this) }
-    private var photosData:MutableList<PhotoData> = mutableListOf()
+    private var photosData: MutableList<PhotoData> = mutableListOf()
+    private var fullData: MutableList<PhotoData> = mutableListOf()
     private var lastEditedPos: Int = -1
 
     private lateinit var recyclerView: RecyclerView
@@ -56,10 +59,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val buttonCapture = findViewById<Button>(R.id.btnNewPhoto)
+        val btnNewPhoto = findViewById<Button>(R.id.btnNewPhoto)
+        val searchText = findViewById<EditText>(R.id.searchText)
+        val btnSearchBy = findViewById<Button>(R.id.btnSearch)
         requestCameraPermission()
-        photosData = photoDb.getAllPhotoData()
-        photosData.reverse()
+        fullData = photoDb.getAllPhotoData()
+        fullData.reverse()
+        photosData.addAll(fullData)
 
         recyclerView = findViewById(R.id.recyclerView)
         recyclerView.layoutManager = GridLayoutManager(this, 2)
@@ -68,7 +74,24 @@ class MainActivity : AppCompatActivity() {
             { photoData -> editPhotoData(photoData, this)}
         recyclerView.adapter = adapter
 
-        buttonCapture.setOnClickListener {
+        btnSearchBy.setOnClickListener {
+            val filterText = searchText.text.toString().trim()
+
+            if (filterText.isBlank() || filterText.isEmpty())
+                if (photosData.size != fullData.size) {
+                    photosData.clear()
+                    photosData.addAll(fullData)
+                    adapter.notifyDataSetChanged()
+                }
+            else {
+                val filteredData = filterData(filterText)
+                photosData.clear()
+                photosData.addAll(filteredData)
+                adapter.notifyDataSetChanged()
+            }
+        }
+
+        btnNewPhoto.setOnClickListener {
             val intent = Intent(this, PhotoActivity::class.java)
             photoActivity.launch(intent)
         }
@@ -81,6 +104,17 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(context, EditActivity::class.java)
         intent.putExtra("photoToEdit", photoData)
         editPhotoActivity.launch(intent)
+    }
+
+    private fun filterData(filterText: String): MutableList<PhotoData> {
+        val filteredData: MutableList<PhotoData> = mutableListOf()
+        for (photoData in fullData)
+            if (filterText in photoData.title ||
+                filterText in photoData.description ||
+                filterText in photoData.tags)
+                filteredData.add(photoData)
+
+        return filteredData
     }
 
     companion object {
