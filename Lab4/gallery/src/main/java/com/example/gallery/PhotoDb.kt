@@ -47,4 +47,26 @@ class PhotoDb(context: Context) {
 
         return allPhotoData
     }
+
+    fun updatePhotoData(photoId: Int, filename: String, title: String = "",
+                        description: String = "", tags: String = ""): PhotoData {
+        val db = dbHelper.writableDatabase
+
+        val values = ContentValues().apply {
+            put(PhotoDbHelper.title, title)
+            put(PhotoDbHelper.description, description)
+            put(PhotoDbHelper.tags, tags)
+        }
+
+        db.update(
+            PhotoDbHelper.table_name,
+            values,
+            "${PhotoDbHelper.id} = ?",
+            arrayOf(photoId.toString())
+        )
+
+
+        return PhotoData(photoId.toInt(), filename, title, description, tags)
+    }
+
 }

@@ -12,7 +12,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.gallery.models.PhotoData
 
-class PhotoAdapter(private val context: Context, private val photoDataList: List<PhotoData>) :
+class PhotoAdapter(private val context: Context,
+                   private val photoDataList: List<PhotoData>,
+                   private val onItemClick: (PhotoData) -> Unit) :
         RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
 
     class PhotoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -36,6 +38,10 @@ class PhotoAdapter(private val context: Context, private val photoDataList: List
         holder.photoTitle.text = photoData.title
         holder.photoDesc.text = photoData.description
         holder.photoTags.text = MainActivity.addHashes(photoData.tags)
+
+        holder.photoView.setOnClickListener {
+            onItemClick(photoData)
+        }
 
     }
 

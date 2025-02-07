@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
 
     private val photoDb by lazy { PhotoDb(this) }
     private var photosData:MutableList<PhotoData> = mutableListOf()
+    private var lastEditedPos: Int = -1
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: PhotoAdapter
@@ -36,6 +37,18 @@ class MainActivity : AppCompatActivity() {
                 takenPhoto?.let { photosData.add(0, takenPhoto as PhotoData) }
                 adapter.notifyItemInserted(0)
                 recyclerView.scrollToPosition(0)
+        }
+    }
+
+    private val editPhotoActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val editedPhoto = result.data?.getSerializableExtra("editedPhoto")
+            editedPhoto?.let { photosData[lastEditedPos] = editedPhoto as PhotoData }
+            adapter.notifyItemChanged(lastEditedPos)
+        }
+        else {
+            lastEditedPos = -1
         }
     }
 
@@ -52,6 +65,7 @@ class MainActivity : AppCompatActivity() {
         recyclerView.layoutManager = GridLayoutManager(this, 2)
 
         adapter = PhotoAdapter(this, photosData)
+            { photoData -> editPhotoData(photoData, this)}
         recyclerView.adapter = adapter
 
         buttonCapture.setOnClickListener {
@@ -59,6 +73,14 @@ class MainActivity : AppCompatActivity() {
             photoActivity.launch(intent)
         }
 
+    }
+
+    private fun editPhotoData(photoData: PhotoData, context: Context) {
+        lastEditedPos = photosData.indexOf(photoData)
+
+        val intent = Intent(context, EditActivity::class.java)
+        intent.putExtra("photoToEdit", photoData)
+        editPhotoActivity.launch(intent)
     }
 
     companion object {

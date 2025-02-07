@@ -24,6 +24,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".PhotoActivity" />
+        <activity android:name=".EditActivity" />
+
 
         <!-- creating file provider to communicate camera and our app -->
         <provider
