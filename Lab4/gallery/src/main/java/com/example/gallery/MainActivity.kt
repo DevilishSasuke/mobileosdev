@@ -22,6 +22,7 @@ import java.io.File
 import java.util.Date
 import java.util.Locale
 import com.example.gallery.models.PhotoData
+import kotlin.math.log
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,21 +39,23 @@ class MainActivity : AppCompatActivity() {
             if (result.resultCode == Activity.RESULT_OK) {
                 val takenPhoto = result.data?.getSerializableExtra("takenPhoto")
                 takenPhoto?.let { photosData.add(0, takenPhoto as PhotoData) }
+                fullDataUpdate()
                 adapter.notifyItemInserted(0)
                 recyclerView.scrollToPosition(0)
         }
     }
 
     private val editPhotoActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val editedPhoto = result.data?.getSerializableExtra("editedPhoto")
-            editedPhoto?.let { photosData[lastEditedPos] = editedPhoto as PhotoData }
-            adapter.notifyItemChanged(lastEditedPos)
-        }
-        else {
-            lastEditedPos = -1
-        }
+        result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val editedPhoto = result.data?.getSerializableExtra("editedPhoto")
+                editedPhoto?.let { photosData[lastEditedPos] = editedPhoto as PhotoData }
+                fullDataUpdate()
+                adapter.notifyItemChanged(lastEditedPos)
+            }
+            else {
+                lastEditedPos = -1
+            }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,8 +66,7 @@ class MainActivity : AppCompatActivity() {
         val searchText = findViewById<EditText>(R.id.searchText)
         val btnSearchBy = findViewById<Button>(R.id.btnSearch)
         requestCameraPermission()
-        fullData = photoDb.getAllPhotoData()
-        fullData.reverse()
+        fullDataUpdate()
         photosData.addAll(fullData)
 
         recyclerView = findViewById(R.id.recyclerView)
@@ -77,17 +79,23 @@ class MainActivity : AppCompatActivity() {
         btnSearchBy.setOnClickListener {
             val filterText = searchText.text.toString().trim()
 
-            if (filterText.isBlank() || filterText.isEmpty())
+            if (filterText.isBlank() || filterText.isEmpty()) {
+                Log.d("CameraDebug", "filterText is empty")
                 if (photosData.size != fullData.size) {
                     photosData.clear()
                     photosData.addAll(fullData)
                     adapter.notifyDataSetChanged()
+                    Log.d("CameraDebug", photosData.toString())
                 }
+            }
             else {
+                Log.d("CameraDebug", "filterText is $filterText")
                 val filteredData = filterData(filterText)
                 photosData.clear()
                 photosData.addAll(filteredData)
                 adapter.notifyDataSetChanged()
+                Log.d("CameraDebug", photosData.toString())
+
             }
         }
 
@@ -115,6 +123,14 @@ class MainActivity : AppCompatActivity() {
                 filteredData.add(photoData)
 
         return filteredData
+    }
+
+    private fun fullDataUpdate() {
+        val dbData = photoDb.getAllPhotoData()
+        dbData.reverse()
+
+        fullData.clear()
+        fullData.addAll(dbData)
     }
 
     companion object {
