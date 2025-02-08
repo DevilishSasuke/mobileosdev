@@ -8,7 +8,6 @@ import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,37 +21,58 @@ import java.io.File
 import java.util.Date
 import java.util.Locale
 import com.example.gallery.models.PhotoData
-import kotlin.math.log
 
 class MainActivity : AppCompatActivity() {
+    /*
+        activity with gallery display
 
-    private val photoDb by lazy { PhotoDb(this) }
-    private var photosData: MutableList<PhotoData> = mutableListOf()
-    private var fullData: MutableList<PhotoData> = mutableListOf()
-    private var lastEditedPos: Int = -1
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: PhotoAdapter
+     */
 
+    private val photoDb by lazy { PhotoDb(this) } // db connection
+    private var photosData: MutableList<PhotoData> = mutableListOf() // current displayed photos
+    private var fullData: MutableList<PhotoData> = mutableListOf() // the whole photos
+    private var lastEditedPos: Int = -1 // id to optimize photo editing
+
+    private lateinit var recyclerView: RecyclerView // object to create scrollable list of photos
+    private lateinit var adapter: PhotoAdapter // adapter to display all picked photos in recycler
+
+    /*
+        activity launcher that opens phone camera and wait any user action
+        such as camera close or photo confirmation
+     */
     private val photoActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         result ->
+            // ok means that photo was successfully received
             if (result.resultCode == Activity.RESULT_OK) {
+                // get receiver photo
                 val takenPhoto = result.data?.getSerializableExtra("takenPhoto")
                 takenPhoto?.let { photosData.add(0, takenPhoto as PhotoData) }
+                // update all db records
                 fullDataUpdate()
+                // notify that 1 element was added at index 0
                 adapter.notifyItemInserted(0)
+                // scroll to this element
+                // otherwise it will be shown from row 2 of recycler
                 recyclerView.scrollToPosition(0)
         }
     }
 
+    /*
+        activity launcher that allows user to edit any photo he has in gallery
+     */
     private val editPhotoActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         result ->
+            // OK on saving changed information
             if (result.resultCode == Activity.RESULT_OK) {
                 val editedPhoto = result.data?.getSerializableExtra("editedPhoto")
+                // change previous object to edited
                 editedPhoto?.let { photosData[lastEditedPos] = editedPhoto as PhotoData }
                 fullDataUpdate()
+                // notify that changed object on position
                 adapter.notifyItemChanged(lastEditedPos)
             }
+            // any other - was aborted, backed to menu, etc.
             else {
                 lastEditedPos = -1
             }
@@ -62,43 +82,54 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // get ui elements
         val btnNewPhoto = findViewById<Button>(R.id.btnNewPhoto)
         val searchText = findViewById<EditText>(R.id.searchText)
         val btnSearchBy = findViewById<Button>(R.id.btnSearch)
+        // get permission to use camera
         requestCameraPermission()
+        // get all data from db
         fullDataUpdate()
+        // add data to displayable list
         photosData.addAll(fullData)
 
         recyclerView = findViewById(R.id.recyclerView)
+        // creating grid with 2 columns in row
         recyclerView.layoutManager = GridLayoutManager(this, 2)
 
+        // create photo display
+        // pass the function to bind photo listener to edit activity
         adapter = PhotoAdapter(this, photosData)
             { photoData -> editPhotoData(photoData, this)}
+        // bind adapter
         recyclerView.adapter = adapter
 
         btnSearchBy.setOnClickListener {
+            // get entered filters
             val filterText = searchText.text.toString().trim()
 
+            // empty means show all
             if (filterText.isBlank() || filterText.isEmpty()) {
-                Log.d("CameraDebug", "filterText is empty")
+                // if was filtered
                 if (photosData.size != fullData.size) {
+                    // display all photos
                     photosData.clear()
                     photosData.addAll(fullData)
+                    // update all data in recycler
                     adapter.notifyDataSetChanged()
-                    Log.d("CameraDebug", photosData.toString())
                 }
             }
             else {
-                Log.d("CameraDebug", "filterText is $filterText")
+                // get data that contains entered text in title, desc or tagsd
                 val filteredData = filterData(filterText)
                 photosData.clear()
                 photosData.addAll(filteredData)
                 adapter.notifyDataSetChanged()
-                Log.d("CameraDebug", photosData.toString())
 
             }
         }
 
+        // launch activity to get new photo
         btnNewPhoto.setOnClickListener {
             val intent = Intent(this, PhotoActivity::class.java)
             photoActivity.launch(intent)
@@ -106,14 +137,18 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    // starting edit activity on photo click with bound photo data
     private fun editPhotoData(photoData: PhotoData, context: Context) {
+        // remember index if editing photo
         lastEditedPos = photosData.indexOf(photoData)
 
+        // launch activity
         val intent = Intent(context, EditActivity::class.java)
         intent.putExtra("photoToEdit", photoData)
         editPhotoActivity.launch(intent)
     }
 
+    // return filtered data that contains filterText in any of title, description or tags values
     private fun filterData(filterText: String): MutableList<PhotoData> {
         val filteredData: MutableList<PhotoData> = mutableListOf()
         for (photoData in fullData)
@@ -125,6 +160,7 @@ class MainActivity : AppCompatActivity() {
         return filteredData
     }
 
+    // get all data from db
     private fun fullDataUpdate() {
         val dbData = photoDb.getAllPhotoData()
         dbData.reverse()
@@ -133,6 +169,7 @@ class MainActivity : AppCompatActivity() {
         fullData.addAll(dbData)
     }
 
+    // static functions
     companion object {
         public fun getImageFilename(): String {
             /*
@@ -157,10 +194,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         public fun addHashes(tags: String): String {
-            val splited_tags = tags.split(" ")
+            val splitedTags = tags.split(" ")
             var result = ""
 
-            for (tag in splited_tags)
+            // for any non empty tag adding hash in the beginning
+            for (tag in splitedTags)
                 if (tag.isNotBlank() and tag.isNotEmpty())
                     result += "#$tag "
 
